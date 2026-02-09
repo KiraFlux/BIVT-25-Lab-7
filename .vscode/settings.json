@@ -1,10 +1,8 @@
 {
-    "dotnet.defaultSolution": "ConsoleApp.sln",
-    "dotnet-test-explorer.enableTelemetry": false,
-    "dotnet-test-explorer.testProjectPath": "Lab7test/Lab7test.csproj",
     "csharp.format.enable": true,
     "editor.formatOnSave": true,
     "[csharp]": {
         "editor.defaultFormatter": "ms-dotnettools.csharp"
     },
+    "omnisharp.enableEditorConfigSupport": true
 }
