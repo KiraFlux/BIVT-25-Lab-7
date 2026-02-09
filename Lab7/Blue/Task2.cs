@@ -30,7 +30,7 @@
                 if (array != null) { Array.Sort(array, (l, r) => r.TotalScore.CompareTo(l.TotalScore)); }
             }
 
-            public void Print() => Console.WriteLine($"Participant{{name: \"{name}\", surname: \"{surname}\", totalScore: {TotalScore}}}");
+            public void Print() => Console.WriteLine($"Participant{{name: \"{name}\", surname: \"{surname}\", TotalScore: {TotalScore}}}");
 
             bool IsResultDestinationValid(int[] result) => result != null && result.Length == JudmentsTotal;
 
