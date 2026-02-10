@@ -5,26 +5,23 @@
         public struct Participant
         {
             readonly string name, surname;
-            int[] penalty_times;
-            int matches_played;
+            int[] penalties_buffer;
+            int penalties_len;
 
             public readonly string Name => name;
             public readonly string Surname => surname;
-            public readonly int[]? PenaltyTimes => penalty_times == null ? null : (int[])penalty_times.Clone();
+            public readonly int[] PenaltyTimes => ListView;
+
+            readonly int[] ListView => (int[])penalties_buffer.Clone();
 
             public readonly int TotalTime
             {
                 get
                 {
-                    if (penalty_times == null)
-                    {
-                        return 0;
-                    }
-
                     int sum = 0;
-                    for (int i = 0; i < matches_played; i += 1)
+                    for (int i = 0; i < penalties_len; i += 1)
                     {
-                        sum += penalty_times[i];
+                        sum += penalties_buffer[i];
                     }
 
                     return sum;
@@ -35,10 +32,9 @@
             {
                 get
                 {
-                    if (penalty_times == null) return false;
-                    for (int i = 0; i < matches_played; i += 1)
+                    for (int i = 0; i < penalties_len; i += 1)
                     {
-                        if (penalty_times[i] == 10)
+                        if (penalties_buffer[i] == 10)
                         {
                             return true;
                         }
@@ -52,55 +48,56 @@
             {
                 this.name = name;
                 this.surname = surname;
-                this.penalty_times = []; // пустой массив, будет расширяться
-                this.matches_played = 0;
+                this.penalties_buffer = []; // пустой массив, будет расширяться
+                this.penalties_len = 0;
             }
 
             public void PlayMatch(int time)
             {
-                if (time < 0) return;
-
-                // Расширяем массив на 1 элемент
-                int newSize = matches_played + 1;
-                int[] newArray = new int[newSize];
-                if (matches_played > 0)
+                if (time < 0)
                 {
-                    Array.Copy(penalty_times, newArray, matches_played);
+                    return;
                 }
 
-                newArray[matches_played] = time;
-                penalty_times = newArray;
-                matches_played += 1;
+                // Расширяем массив на 1 элемент
+                var new_len = penalties_len + 1;
+                var new_buffer = new int[new_len];
+                if (penalties_len > 0)
+                {
+                    Array.Copy(penalties_buffer, new_buffer, penalties_len);
+                }
+
+                new_buffer[penalties_len] = time;
+                penalties_buffer = new_buffer;
+                penalties_len += 1;
             }
 
             public static void Sort(Participant[] array)
             {
-                if (array != null)
+                if (array == null) { return; }
+                Array.Sort(array, (l, r) =>
                 {
-                    Array.Sort(array, (l, r) =>
+                    // Сначала по возрастанию
+                    int timeCompare = l.TotalTime.CompareTo(r.TotalTime);
+                    if (timeCompare != 0)
                     {
-                        // Сначала по возрастанию
-                        int timeCompare = l.TotalTime.CompareTo(r.TotalTime);
-                        if (timeCompare != 0)
-                        {
-                            return timeCompare;
-                        }
+                        return timeCompare;
+                    }
 
-                        // При равных исключенные идут перед неисключенными
-                        if (l.IsExpelled && !r.IsExpelled)
-                        {
-                            return -1;
-                        }
+                    // При равных исключенные идут перед неисключенными
+                    if (l.IsExpelled && !r.IsExpelled)
+                    {
+                        return -1;
+                    }
 
-                        if (!l.IsExpelled && r.IsExpelled)
-                        {
-                            return 1;
-                        }
+                    if (!l.IsExpelled && r.IsExpelled)
+                    {
+                        return 1;
+                    }
 
-                        // В остальных случаях сохраняем порядок
-                        return 0;
-                    });
-                }
+                    // В остальных случаях сохраняем порядок
+                    return 0;
+                });
             }
 
             public readonly void Print() =>
