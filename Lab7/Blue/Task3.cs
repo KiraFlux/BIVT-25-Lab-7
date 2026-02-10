@@ -2,49 +2,64 @@
 {
     public class Task3
     {
-        struct DynamicArrayList
+        struct LiterallyAlmostNotAnUnefficientDynamicArrayListAndSomeThing()
         {
-            int[] penalties_buffer = [];
-            int penalties_len = 0;
+            int[] buffer = [];
+            int len = 0, sum;
+            bool sum_calculated = false;
 
-            public DynamicArrayList() { }
-
-            public readonly bool Has(int search_target) => penalties_buffer.Any((item) => item == search_target);
-
-            public readonly int[] View => (int[])penalties_buffer.Clone();
-
-            public readonly int Sum() => penalties_buffer.Sum();
-
-            public void Add(int item)
+            public int Sum
             {
-                var new_buffer = new int[penalties_len + 1];
-                if (penalties_len > 0)
+                get
                 {
-                    Array.Copy(penalties_buffer, new_buffer, penalties_len);
+                    if (sum_calculated) { return this.sum; }
+                    this.sum_calculated = true;
+                    return this.sum = this.buffer.Sum();
                 }
+            }
 
-                new_buffer[penalties_len] = item;
-                penalties_buffer = new_buffer;
-                penalties_len += 1;
+            public readonly bool Has(int target) => this.buffer.Any((item) => item == target);
+
+            public readonly int[] View => (int[])this.buffer.Clone();
+
+            public void Add(int value)
+            {
+                this.Realloc(extra_values: 1);
+                this.Set(value, ^1);
+            }
+
+            void Set(int value, Index i) // класс Index не указан в разрешенных, но тут же можно? :)
+            {
+                this.buffer[i] = value;
+                this.sum_calculated = false;
+            }
+
+            void Realloc(uint extra_values)
+            {
+                var new_buffer = new int[this.len + extra_values];
+                if (this.len > 0)
+                {
+                    Array.Copy(this.buffer, new_buffer, this.len);
+                }
+                this.buffer = new_buffer;
+                this.len = new_buffer.Length;
             }
         }
 
         public struct Participant(string name, string surname)
         {
-            const int expelled_value = 10;
-
             readonly string name = name, surname = surname;
-            DynamicArrayList penalties = new();
+            LiterallyAlmostNotAnUnefficientDynamicArrayListAndSomeThing penalties = new();
 
-            public readonly string Name => name;
-            public readonly string Surname => surname;
-            public readonly int[] PenaltyTimes => penalties.View;
-            public readonly int TotalTime => penalties.Sum();
-            public readonly bool IsExpelled => penalties.Has(expelled_value);
+            public readonly string Name => this.name;
+            public readonly string Surname => this.surname;
+            public readonly int[] PenaltyTimes => this.penalties.View;
+            public readonly int TotalTime => this.penalties.Sum;
+            public readonly bool IsExpelled => this.penalties.Has(10);
 
             public void PlayMatch(int time)
             {
-                if (time >= 0) { penalties.Add(time); }
+                if (time >= 0) { this.penalties.Add(time); }
             }
 
             public static void Sort(Participant[]? array)
@@ -64,10 +79,10 @@
                 });
             }
 
-            public readonly void Print() => Console.WriteLine(ToString());
+            public readonly void Print() => Console.WriteLine(this.ToString());
 
-            override public readonly string ToString() => 
-                $"Participant{{name: \"{name}\", surname: \"{surname}\", totalTime: {TotalTime}, isExpelled: {IsExpelled}}}";
+            override public readonly string ToString() =>
+                $"Participant{{name: \"{this.name}\", surname: \"{this.surname}\", totalTime: {this.TotalTime}, isExpelled: {this.IsExpelled}}}";
         }
     }
 }
