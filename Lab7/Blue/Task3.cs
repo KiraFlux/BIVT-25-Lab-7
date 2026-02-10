@@ -54,12 +54,11 @@
 
             public void PlayMatch(int time)
             {
-                if (time < 0)
-                {
-                    return;
-                }
+                if (time >= 0) { ListAdd(time); }
+            }
 
-                // Расширяем массив на 1 элемент
+            void ListAdd(int i)
+            {
                 var new_len = penalties_len + 1;
                 var new_buffer = new int[new_len];
                 if (penalties_len > 0)
@@ -67,7 +66,7 @@
                     Array.Copy(penalties_buffer, new_buffer, penalties_len);
                 }
 
-                new_buffer[penalties_len] = time;
+                new_buffer[penalties_len] = i;
                 penalties_buffer = new_buffer;
                 penalties_len += 1;
             }
