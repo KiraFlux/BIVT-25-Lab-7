@@ -11,14 +11,14 @@
             readonly int[,] marks = new int[JumpsTotal, JudmentsTotal];
             int jumps_done = 0;
 
-            public readonly string Name => name;
-            public readonly string Surname => surname;
-            public readonly int[,]? Marks => marks == null ? null : (int[,])marks.Clone();
-            public readonly int TotalScore => (marks == null) ? 0 : marks.Cast<int>().Sum();
+            public readonly string Name => this.name;
+            public readonly string Surname => this.surname;
+            public readonly int[,] Marks => (int[,])this.marks.Clone();
+            public readonly int TotalScore => this.marks.Cast<int>().Sum();
 
             public void Jump(int[] result)
             {
-                if (!IsResultDestinationValid(result) || !CanJump) { return; }
+                if (!IsResultDestinationValid(result) || !this.CanJump) { return; }
                 for (int i = 0; i < JudmentsTotal; i += 1) { this.marks[this.jumps_done, i] = result[i]; }
                 this.jumps_done += 1;
             }
@@ -28,13 +28,14 @@
                 if (array != null) { Array.Sort(array, (l, r) => r.TotalScore.CompareTo(l.TotalScore)); }
             }
 
-            public readonly void Print() => Console.WriteLine(
-                $"Participant{{name: \"{name}\", surname: \"{surname}\", TotalScore: {TotalScore}, CanJump: {CanJump}}}"
-            );
+            public readonly void Print() => Console.WriteLine(this.ToString());
+
+            override public readonly string ToString() =>
+                $"Participant{{name: \"{name}\", surname: \"{surname}\", TotalScore: {TotalScore}, CanJump: {CanJump}}}";
 
             static bool IsResultDestinationValid(int[] result) => result != null && result.Length == JudmentsTotal;
 
-            readonly bool CanJump => this.jumps_done < JumpsTotal && this.marks != null;
+            readonly bool CanJump => this.jumps_done < JumpsTotal;
         }
     }
 }
