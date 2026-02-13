@@ -1,175 +1,111 @@
-﻿using System.Globalization;
-using System.Runtime.CompilerServices;
-
-namespace Lab7.Blue
+﻿namespace Lab7.Blue
 {
     public class Task4
     {
-        struct LiterallyAlmostNotAnUnefficientDynamicArrayListAndSomeThing()
+        struct AlmostListOfInts
         {
             int[] buffer = [];
             int len = 0, sum;
             bool sum_calculated = false;
 
+            public AlmostListOfInts() { }
+
             public int Sum
             {
                 get
                 {
-                    if (sum_calculated) { return this.sum; }
-                    this.sum_calculated = true;
-                    return this.sum = this.buffer.Sum();
+                    if (sum_calculated) { return sum; }
+                    sum_calculated = true;
+                    return sum = buffer.Sum();
                 }
             }
 
-            public readonly bool Has(int target) => this.buffer.Any((item) => item == target);
-
-            public readonly int[] View => (int[])this.buffer.Clone();
-
+            public readonly bool Has(int target) => buffer.Contains(target);
+            public readonly int[] View
+            {
+                get
+                {
+                    var copy = new int[len];
+                    Array.Copy(buffer, copy, len);
+                    return copy;
+                }
+            }
             public void Add(int value)
             {
-                this.Realloc(extra_values: 1);
-                this.Set(value, ^1);
+                Realloc(1);
+                buffer[len - 1] = value;
+                sum_calculated = false;
             }
 
-            void Set(int value, Index i) // класс Index не указан в разрешенных, но тут же можно? :)
+            void Realloc(uint extra)
             {
-                this.buffer[i] = value;
-                this.sum_calculated = false;
-            }
-
-            void Realloc(uint extra_values)
-            {
-                var new_buffer = new int[this.len + extra_values];
-                if (this.len > 0)
-                {
-                    Array.Copy(this.buffer, new_buffer, this.len);
-                }
-                this.buffer = new_buffer;
-                this.len = new_buffer.Length;
+                var new_buffer = new int[len + extra];
+                if (len > 0) { Array.Copy(buffer, new_buffer, len); }
+                buffer = new_buffer;
+                len = buffer.Length;
             }
         }
 
         public struct Team(string name)
         {
             readonly string name = name;
-            LiterallyAlmostNotAnUnefficientDynamicArrayListAndSomeThing scores = new();
+            AlmostListOfInts scores = new();
 
-            public readonly string Name => this.name;
-            public readonly int[] Scores => this.scores.View;
+            public readonly string Name => name;
+            public readonly int[] Scores => scores.View;
+            public readonly int TotalScore => scores.Sum;
 
-            public readonly int TotalScore => this.scores.Sum;
-
-            public void PlayMatch(int result) => this.scores.Add(result);
-
-            public readonly void Print() => Console.WriteLine(this.ToString()); // 0 refs -- метод такой типа: "Я никому не ужин"
-
-            override public readonly string ToString() =>
-                $"Team{{Name: \"{this.name}\", Scores: \"{this.Scores}\", TotalScore: {this.TotalScore}}}";
+            public void PlayMatch(int result) => scores.Add(result);
+            public readonly void Print() => Console.WriteLine(ToString());
+            public override readonly string ToString() =>
+                $"Team{{Name: \"{name}\", Scores: [{string.Join(", ", Scores)}], TotalScore: {TotalScore}}}";
         }
-
-
-        struct LiterallyAlmostNotAnUnefficientDynamicArrayListAndSomeThing2()
-        {
-            Team[] buffer = [];
-            uint len = 0;
-
-            public readonly Team[] View => (Team[])this.buffer.Clone();
-            public readonly bool IsEmpty => 0 == buffer.Length;
-
-            public void Add(params Team[] teams)
-            {
-                var tail_index = this.len;
-
-                this.Realloc(this.len + (uint)teams.Length);
-
-                for (var i = 0; i < teams.Length; i += 1)
-                {
-                    this.buffer[tail_index + i] = teams[i];
-                }
-            }
-
-            void Realloc(uint new_len)
-            {
-                var new_buffer = new Team[new_len];
-                if (this.len > 0)
-                {
-                    Array.Copy(this.buffer, new_buffer, this.len);
-                }
-                this.buffer = new_buffer;
-                this.len = (uint)new_buffer.Length;
-            }
-
-            public readonly void Sort() => Array.Sort(this.buffer, (l, r) => l.TotalScore.CompareTo(r.TotalScore));
-        }
-
 
         public struct Group(string name)
         {
             readonly string name = name;
-            LiterallyAlmostNotAnUnefficientDynamicArrayListAndSomeThing2 teams = new();
+            readonly Team[] teams = new Team[12];
+            int count = 0;
 
-            public readonly string Name => this.name;
-            public readonly Team[] Teams => this.teams.View;
+            public readonly string Name => name;
+            public readonly Team[] Teams => (Team[])teams.Clone();
 
-            public void Add(Team t) => teams.Add(t);
-
-            public void Add(Team[]? t)
+            public void Add(Team t)
             {
-                if (t != null) { teams.Add(t); }
+                if (count >= 12) { return; }
+                teams[count] = t;
+                count += 1;
             }
 
-            struct Popper(Group g)
+            public void Add(Team[]? ts)
             {
-                readonly Team[] teams = g.Teams;
-                uint pops = 0;
+                if (ts == null) { return; }
 
-                public Team? Pop()
+                for (int i = 0; i < ts.Length && count < 12; i += 1)
                 {
-                    if (this.pops == (uint)teams.Length) { return null; }
-                    var i = this.pops;
-                    this.pops -= 1;
-                    return this.teams[i];
-                }
-
-                public static Popper[] Make(params Group[] groups)
-                {
-                    var ret = new Popper[groups.Length];
-                    for (var i = 0u; i < groups.Length; i += 1) { ret[i] = new Popper(groups[i]); }
-                    return ret;
+                    teams[count] = ts[i];
+                    count += 1;
                 }
             }
 
-            public readonly void Sort() => this.teams.Sort();
+            public readonly void Sort() => Array.Sort(teams, (l, r) => r.TotalScore.CompareTo(l.TotalScore));
 
-            public readonly void Print() => Console.WriteLine(this.ToString()); // 0 refs -- метод такой типа: "Я никому не ужин"
+            public readonly void Print() => Console.WriteLine(ToString());
 
-            override public readonly string ToString() => $"Team{{Name: \"{this.name}\", Teams: {{{string.Join(", ", this.Teams)}}}}}";
+            public override readonly string ToString() =>
+                $"Group{{Name: \"{name}\", Teams: [{string.Join(", ", Teams.Select(t => t.Name))}]}}";
 
-            public static Group Merge(Group a, Group b, int max_size)
+            public static Group Merge(Group a, Group b, int size)
             {
+                var combined = new Team[12];
+                int idx = 0;
+                for (int i = 0; i < 6; i++) { combined[idx++] = a.teams[i]; }
+                for (int i = 0; i < 6; i++) { combined[idx++] = b.teams[i]; }
+
+                Array.Sort(combined, (l, r) => r.TotalScore.CompareTo(l.TotalScore));
+
                 var ret = new Group("Финалисты");
-
-                var poppers = Popper.Make(a, b);
-                var pop_failed_count = 0;
-                var current_popper_index = 0;
-                for (var i = 0; i < max_size; current_popper_index = (current_popper_index + 1) % poppers.Length)
-                {
-                    var popped = poppers[current_popper_index].Pop();
-
-                    if (null == popped)
-                    {
-                        pop_failed_count += 1;
-                        continue;
-                    }
-
-                    if (poppers.Length == pop_failed_count) { break; }
-
-                    ret.Add((Team)popped);
-
-                    i += 1;
-                    pop_failed_count = 0;
-                }
-
+                for (int i = 0; i < idx && ret.count < size; i++) { ret.Add(combined[i]); }
                 return ret;
             }
         }
